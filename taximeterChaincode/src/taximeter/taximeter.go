@@ -54,51 +54,26 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Printf("Running invoke")
 	
-	var A, time, lat, lng, jsonGPS string  
+	var role, time, lat, lng, jsonGPS string  
 	var err error
 
 	if len(args) != 4 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 3")
 	}
 
-	A = args[0]
+	role = args[0]
 	time = args[1]
 	lat = args[2]
 	lng = args[3]
 	
 	jsonGPS = "{\"lat\":"+ lat + ",\"lng\":" + lng + "}"
 
-	drvval, err := stub.GetState("drv")
-	if err != nil {
-		return nil, errors.New("Failed to get state")
-	}
-	if drvval == nil {
-		return nil, errors.New("drv not found")
-	}
-	drv := string(drvval)
-	psgval, err := stub.GetState("psg")
-	if err != nil {
-		return nil, errors.New("Failed to get state")
-	}
-	if psgval == nil {
-		return nil, errors.New("psg not found")
-	}
-	psg := string(psgval)
+
+	err = stub.PutState(role+time, []byte(jsonGPS))
 	
-	if (A == drv) {
-		err = stub.PutState("drv"+time, []byte(jsonGPS))
-		if err != nil {
-			return nil, err
-		}
-	} else if (A == psg) {
-		err = stub.PutState("psg"+time, []byte(jsonGPS))
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, errors.New("Entity not found")
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
 }
 
 // Invoke callback representing the invocation of a chaincode
