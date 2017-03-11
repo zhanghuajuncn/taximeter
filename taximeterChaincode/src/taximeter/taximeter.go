@@ -17,7 +17,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	fmt.Printf("Init called, initializing chaincode")
 	
 	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
+	var timePrice, milePrice int // Asset holdings
 	var err error
 
 	if len(args) != 4 {
@@ -26,24 +26,32 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 
 	// Initialize the chaincode
 	A = args[0]
-	Aval, err = strconv.Atoi(args[1])
+	B = args[1]
+	timePrice, err = strconv.Atoi(args[2])
 	if err != nil {
 		return nil, errors.New("Expecting integer value for asset holding")
 	}
-	B = args[2]
-	Bval, err = strconv.Atoi(args[3])
+	milePrice, err = strconv.Atoi(args[3])
 	if err != nil {
 		return nil, errors.New("Expecting integer value for asset holding")
 	}
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+	fmt.Printf("timePrice = %d, milePrice = %d\n", timePrice, milePrice)
 
 	// Write the state to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	err = stub.PutState("drv", []byte("drv"))
+	if err != nil {
+		return nil, err
+	}
+	err = stub.PutState("psg", []byte(B))
+	if err != nil {
+		return nil, err
+	}
+	err = stub.PutState("timePrice", []byte(strconv.Itoa(timePrice)))
 	if err != nil {
 		return nil, err
 	}
 
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	err = stub.PutState("milePrice", []byte(strconv.Itoa(milePrice)))
 	if err != nil {
 		return nil, err
 	}
