@@ -54,25 +54,23 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Printf("Running invoke")
 	
-	//var role, time string  
+	var role, time string  
 	var jsonGPS string
-	//var lng, lat string
+	var lng, lat string
 	var err error
 
 	if len(args) != 4 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 3")
 	}
 
-	//role = args[0]
-	//time = args[1]
-	//lat = args[2]
-	//lng = args[3]
+	role = args[0]
+	time = args[1]
+	lat = args[2]
+	lng = args[3]
 	
-	//jsonGPS = "{\"lat\":"+ lat + ",\"lng\":" + lng + "}"
-	jsonGPS = "lalal"
+	jsonGPS = "{\"lat\":"+ lat + ",\"lng\":" + lng + "}"
 
-
-	err = stub.PutState("drv1122", []byte(jsonGPS))
+	err = stub.PutState(role + time, []byte(jsonGPS))
 	if err != nil {
 		return nil, err
 	}
