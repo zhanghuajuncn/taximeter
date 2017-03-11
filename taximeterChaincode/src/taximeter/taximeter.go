@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
@@ -27,18 +26,12 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	// Initialize the chaincode
 	A = args[0]
 	B = args[1]
-	timePrice, err = strconv.Atoi(args[2])
-	if err != nil {
-		return nil, errors.New("Expecting integer value for asset holding")
-	}
-	milePrice, err = strconv.Atoi(args[3])
-	if err != nil {
-		return nil, errors.New("Expecting integer value for asset holding")
-	}
-	fmt.Printf("timePrice = %d, milePrice = %d\n", timePrice, milePrice)
+	timePrice = args[2]
+	milePrice = args[3]
+
 
 	// Write the state to the ledger
-	err = stub.PutState("drv", []byte("drv"))
+	err = stub.PutState("drv", []byte(A))
 	if err != nil {
 		return nil, err
 	}
@@ -46,16 +39,15 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	if err != nil {
 		return nil, err
 	}
-	err = stub.PutState("timePrice", []byte(strconv.Itoa(timePrice)))
+	err = stub.PutState("timePrice", []byte(timePrice))
 	if err != nil {
 		return nil, err
 	}
 
-	err = stub.PutState("milePrice", []byte(strconv.Itoa(milePrice)))
+	err = stub.PutState("milePrice", []byte(milePrice))
 	if err != nil {
 		return nil, err
 	}
-
 	return nil, nil
 }
 
@@ -63,74 +55,50 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Printf("Running invoke")
 	
-	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
-	var X int          // Transaction value
+	var A, time, lat, lng, jsonGPS string  
 	var err error
 
-	if len(args) != 3 {
+	if len(args) != 4 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 3")
 	}
 
 	A = args[0]
-	B = args[1]
-
-	// Get the state from the ledger
-	// TODO: will be nice to have a GetAllState call to ledger
-	Avalbytes, err := stub.GetState(A)
-	if err != nil {
-		return nil, errors.New("Failed to get state")
-	}
-	if Avalbytes == nil {
-		return nil, errors.New("Entity not found")
-	}
-	Aval, _ = strconv.Atoi(string(Avalbytes))
-
-	Bvalbytes, err := stub.GetState(B)
-	if err != nil {
-		return nil, errors.New("Failed to get state")
-	}
-	if Bvalbytes == nil {
-		return nil, errors.New("Entity not found")
-	}
-	Bval, _ = strconv.Atoi(string(Bvalbytes))
-
-	// Perform the execution
-	X, err = strconv.Atoi(args[2])
-	Aval = Aval - X
-	Bval = Bval + X
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
-
-	// Write the state back to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return nil, err
-	}
-
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
-}
-
-// Deletes an entity from state
-func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	fmt.Printf("Running delete")
+	time = args[1]
+	lat = args[2]
+	lng = args[3]
 	
-	if len(args) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 3")
-	}
+	jsonGPS = "{\"lat\":"+ lat + ",\"lng\":" + lng + "}"
 
-	A := args[0]
-
-	// Delete the key from the state in ledger
-	err := stub.DelState(A)
+	drvval, err := stub.GetState("drv")
 	if err != nil {
-		return nil, errors.New("Failed to delete state")
+		return nil, errors.New("Failed to get state")
 	}
-
+	if drvval == nil {
+		return nil, errors.New("drv not found")
+	}
+	drv = string(drvval)
+	psgval, err := stub.GetState("psg")
+	if err != nil {
+		return nil, errors.New("Failed to get state")
+	}
+	if psgval == nil {
+		return nil, errors.New("psg not found")
+	}
+	psg = string(psgval)
+	
+	if (A == drv) {
+		err = stub.PutState("drv"+time, []byte(jsonGPS))
+		if err != nil {
+			return nil, err
+		}
+	} else if (A == psg) {
+		err = stub.PutState("psg"+time, []byte(jsonGPS))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("Entity not found")
+	}
 	return nil, nil
 }
 
@@ -144,15 +112,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		// Transaction makes payment of X units from A to B
 		fmt.Printf("Function is invoke")
 		return t.invoke(stub, args)
-	} else if function == "init" {
-		fmt.Printf("Function is init")
-		return t.Init(stub, function, args)
-	} else if function == "delete" {
-		// Deletes an entity from its state
-		fmt.Printf("Function is delete")
-		return t.delete(stub, args)
-	}
-
+	} 
 	return nil, errors.New("Received unknown function invocation")
 }
 
@@ -164,50 +124,62 @@ func (t* SimpleChaincode) Run(stub shim.ChaincodeStubInterface, function string,
 		// Transaction makes payment of X units from A to B
 		fmt.Printf("Function is invoke")
 		return t.invoke(stub, args)
-	} else if function == "init" {
-		fmt.Printf("Function is init")
-		return t.Init(stub, function, args)
-	} else if function == "delete" {
-		// Deletes an entity from its state
-		fmt.Printf("Function is delete")
-		return t.delete(stub, args)
+	}
+	return nil, errors.New("Received unknown function invocation")
+}
+
+func (t *SimpleChaincode) queryGPS(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var role, time, jsonResp string // Entities
+	var err error
+
+	if len(args) != 2 {
+		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
 	}
 
-	return nil, errors.New("Received unknown function invocation")
+	role = args[0]
+	time = args[1]
+
+	// Get the state from the ledger
+	posval, err =  stub.GetState(role+time)
+	if err != nil {
+		return nil, errors.New("Failed to get position")
+	}
+
+	jsonResp := string(posval)
+	fmt.Printf("Query Response:%s\n", jsonResp)
+	return posval, nil
+}
+
+func (t *SimpleChaincode) queryPrice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var whichPrice, price string 
+	var err error
+	if len(args) != 1 {
+		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
+	}
+
+	whichPrice = args[0]
+	priceval, err =  stub.GetState(whichPrice)
+	if err != nil {
+		return nil, errors.New("Failed to get position")
+	}
+
+	price := string(posval)
+	fmt.Printf("Query Response:%s\n", price)
+	return priceval, nil
 }
 
 // Query callback representing the query of a chaincode
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Printf("Query called, determining function")
 	
-	if function != "query" {
-		fmt.Printf("Function is query")
-		return nil, errors.New("Invalid query function name. Expecting \"query\"")
+	if function == "queryGPS" {
+		fmt.Printf("Query GPS")
+		return t.queryGPS(stub, args)
+	} else if function == "queryPrice" {
+		fmt.Printf("Query price")
+		return t.queryPrice(stub, args)
 	}
-	var A string // Entities
-	var err error
-
-	if len(args) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
-	}
-
-	A = args[0]
-
-	// Get the state from the ledger
-	Avalbytes, err := stub.GetState(A)
-	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
-		return nil, errors.New(jsonResp)
-	}
-
-	if Avalbytes == nil {
-		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
-		return nil, errors.New(jsonResp)
-	}
-
-	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
-	fmt.Printf("Query Response:%s\n", jsonResp)
-	return Avalbytes, nil
+	return nil, errors.New("Received unknown function invocation")
 }
 
 func main() {
