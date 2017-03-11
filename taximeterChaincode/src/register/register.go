@@ -20,10 +20,10 @@ func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string
 	fmt.Printf("Running invoke")
 	
 	var A, B string    // Entities
-	var time, chaincodeID string
+	var time, chaincodeID, startTime, json string
 	var err error
 
-	if len(args) != 4 {
+	if len(args) != 5 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 3")
 	}
 
@@ -31,8 +31,11 @@ func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string
 	B = args[1]
 	time = args[2]
 	chaincodeID = args[3]
+	startTime = args[4]
+	
+	json = "{\"chaincode\":\"" + chaincodeID + "\",\"time\":\"" + startTime + "\"}"
 
-	err = stub.PutState(A+B+time, []byte(chaincodeID))
+	err = stub.PutState(A+B+time, []byte(json))
 	if err != nil {
 		return nil, err
 	}
