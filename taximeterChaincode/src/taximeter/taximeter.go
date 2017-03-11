@@ -70,10 +70,10 @@ func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string
 
 
 	err = stub.PutState(role+time, []byte(jsonGPS))
-	
 	if err != nil {
 		return nil, err
 	}
+	return nil, nil
 }
 
 // Invoke callback representing the invocation of a chaincode
