@@ -152,7 +152,6 @@ func (t *SimpleChaincode) queryGPS(stub shim.ChaincodeStubInterface, args []stri
 func (t *SimpleChaincode) queryPrice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var whichPrice string 
 	var err error
-	return nil, errors.New("no")
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
 	}
