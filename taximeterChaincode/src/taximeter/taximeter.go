@@ -137,11 +137,15 @@ func (t *SimpleChaincode) queryGPS(stub shim.ChaincodeStubInterface, args []stri
 
 	role = args[0]
 	time = args[1]
+	
 
 	// Get the state from the ledger
 	posval, err :=  stub.GetState(role+time)
 	if err != nil {
 		return nil, errors.New("Failed to get position")
+	}
+	if pos == nil {
+		return nil, errors.New("Empty position")
 	}
 
 	jsonResp = string(posval)
