@@ -162,7 +162,7 @@ func (t *SimpleChaincode) queryPrice(stub shim.ChaincodeStubInterface, args []st
 		return nil, errors.New("Failed to get position")
 	}
 
-	price := string(posval)
+	price := string(priceval)
 	fmt.Printf("Query Response:%s\n", price)
 	return priceval, nil
 }
