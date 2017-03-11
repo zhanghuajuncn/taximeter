@@ -4,7 +4,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
@@ -16,7 +15,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	fmt.Printf("Init called, initializing chaincode")
 	
 	var A, B string    // Entities
-	var timePrice, milePrice int // Asset holdings
+	var timePrice, milePrice string // Asset holdings
 	var err error
 
 	if len(args) != 4 {
@@ -55,7 +54,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Printf("Running invoke")
 	
-	var A, time, lat, lng, jsonGPS string  
+	var A, time, lat, lng, jsonGPS, drv, psg string  
 	var err error
 
 	if len(args) != 4 {
@@ -145,7 +144,7 @@ func (t *SimpleChaincode) queryGPS(stub shim.ChaincodeStubInterface, args []stri
 		return nil, errors.New("Failed to get position")
 	}
 
-	jsonResp := string(posval)
+	jsonResp = string(posval)
 	fmt.Printf("Query Response:%s\n", jsonResp)
 	return posval, nil
 }
@@ -163,7 +162,7 @@ func (t *SimpleChaincode) queryPrice(stub shim.ChaincodeStubInterface, args []st
 		return nil, errors.New("Failed to get position")
 	}
 
-	price := string(posval)
+	price = string(posval)
 	fmt.Printf("Query Response:%s\n", price)
 	return priceval, nil
 }
