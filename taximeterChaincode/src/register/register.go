@@ -3,8 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"strconv"
-
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
@@ -100,7 +98,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	}
 
 	fmt.Printf("Query Response:%s\n", blockchainID)
-	return Avalbytes, nil
+	return blockchainID, nil
 }
 
 func main() {
