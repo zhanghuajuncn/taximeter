@@ -21,6 +21,7 @@ func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string
 	
 	var A, B string    // Entities
 	var time, chaincodeID string
+	var err error
 
 	if len(args) != 4 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 3")
