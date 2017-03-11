@@ -144,7 +144,7 @@ func (t *SimpleChaincode) queryGPS(stub shim.ChaincodeStubInterface, args []stri
 	if err != nil {
 		return nil, errors.New("Failed to get position")
 	}
-	if pos == nil {
+	if posval == nil {
 		return nil, errors.New("Empty position")
 	}
 
