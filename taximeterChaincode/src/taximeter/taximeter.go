@@ -54,7 +54,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Printf("Running invoke")
 	
-	var A, time, lat, lng, jsonGPS, drv, psg string  
+	var A, time, lat, lng, jsonGPS string  
 	var err error
 
 	if len(args) != 4 {
@@ -75,7 +75,7 @@ func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string
 	if drvval == nil {
 		return nil, errors.New("drv not found")
 	}
-	drv = string(drvval)
+	drv := string(drvval)
 	psgval, err := stub.GetState("psg")
 	if err != nil {
 		return nil, errors.New("Failed to get state")
@@ -83,7 +83,7 @@ func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string
 	if psgval == nil {
 		return nil, errors.New("psg not found")
 	}
-	psg = string(psgval)
+	psg := string(psgval)
 	
 	if (A == drv) {
 		err = stub.PutState("drv"+time, []byte(jsonGPS))
@@ -139,7 +139,7 @@ func (t *SimpleChaincode) queryGPS(stub shim.ChaincodeStubInterface, args []stri
 	time = args[1]
 
 	// Get the state from the ledger
-	posval, err =  stub.GetState(role+time)
+	posval, err :=  stub.GetState(role+time)
 	if err != nil {
 		return nil, errors.New("Failed to get position")
 	}
@@ -150,19 +150,19 @@ func (t *SimpleChaincode) queryGPS(stub shim.ChaincodeStubInterface, args []stri
 }
 
 func (t *SimpleChaincode) queryPrice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	var whichPrice, price string 
+	var whichPrice string 
 	var err error
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
 	}
 
 	whichPrice = args[0]
-	priceval, err =  stub.GetState(whichPrice)
+	priceval, err :=  stub.GetState(whichPrice)
 	if err != nil {
 		return nil, errors.New("Failed to get position")
 	}
 
-	price = string(posval)
+	price := string(posval)
 	fmt.Printf("Query Response:%s\n", price)
 	return priceval, nil
 }
